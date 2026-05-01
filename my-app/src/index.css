@@ -1,0 +1,45 @@
+@import 'tailwindcss';
+
+@theme {
+  /* PSU Deep Blue (สีน้ำเงินเข้ม) */
+  --color-psu-deep-blue-100: #d1d9e3;
+  --color-psu-deep-blue-200: #a2b5c6;
+  --color-psu-deep-blue-300: #748fa9;
+  --color-psu-deep-blue-400: #456a8d;
+  --color-psu-deep-blue-500: #003c71;
+
+  /* PSU Sky Blue (สีฟ้า) */
+  --color-psu-sky-blue-100: #d6eef9;
+  --color-psu-sky-blue-200: #adddf2;
+  --color-psu-sky-blue-300: #83cdeb;
+  --color-psu-sky-blue-400: #5abce5;
+  --color-psu-sky-blue-500: #009cde;
+
+  /* PSU Ocean Blue (สีน้ำเงินทะเล) */
+  --color-psu-ocean-blue-100: #d9e3f1;
+  --color-psu-ocean-blue-200: #b2c7e1;
+  --color-psu-ocean-blue-300: #8dabd3;
+  --color-psu-ocean-blue-400: #668fc4;
+  --color-psu-ocean-blue-500: #3a5dae;
+
+  /* PSU Andaman Blue (สีฟ้าอันดามัน) */
+  --color-psu-andaman-blue-100: #d1ebf1;
+  --color-psu-andaman-blue-200: #a2d7e3;
+  --color-psu-andaman-blue-300: #74c2d5;
+  --color-psu-andaman-blue-400: #46aec8;
+  --color-psu-andaman-blue-500: #0085ad;
+
+  /* PSU River Blue (สีฟ้าแม่น้ำ) */
+  --color-psu-river-blue-100: #ddf3f9;
+  --color-psu-river-blue-200: #bbe8f2;
+  --color-psu-river-blue-300: #98dceb;
+  --color-psu-river-blue-400: #76d1e5;
+  --color-psu-river-blue-500: #54c5de;
+
+  /* PSU Sritrang (สีดอกศรีตรัง) */
+  --color-psu-sritrang-100: #f1f1f8;
+  --color-psu-sritrang-200: #e4e3f1;
+  --color-psu-sritrang-300: #d6d4e9;
+  --color-psu-sritrang-400: #c9c7e2;
+  --color-psu-sritrang-500: #b6b8dc;
+}
