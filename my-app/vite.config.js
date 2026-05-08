@@ -1,11 +1,9 @@
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import tailwindcss from '@tailwindcss/vite';
-
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -14,8 +12,9 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 3000,
-    allowedHosts: [
-      'tutor-constant-ahoy.ngrok-free.dev'
-    ]
+    hmr: {
+    protocol: 'wss',
+    host: 'tutor-constant-ahoy.ngrok-free.dev', // ใส่โดเมน ngrok ของคุณ
+  },
   },
 });
