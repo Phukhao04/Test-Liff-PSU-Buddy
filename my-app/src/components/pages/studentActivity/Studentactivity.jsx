@@ -1,317 +1,193 @@
-import { useContext, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useContext, useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
+import { getActivityData } from '@/services/activity.service';
 import Context from '@/contexts/Context';
-import dow from '@/assets/img/dow.png';
+import spider from '@/assets/img/spider.png';
 
-import {
-  FaAngleDown,
-  FaCalendarAlt,
-  FaChevronRight,
-  FaClipboardList,
-  FaDownload,
-  FaHeart,
-  FaHistory,
-  FaSearch,
-  FaShieldAlt,
-} from 'react-icons/fa';
+import { FaHeart, FaStar, FaChevronRight } from 'react-icons/fa';
 
-import {
-  PolarAngleAxis,
-  PolarGrid,
-  Radar,
-  RadarChart,
-  ResponsiveContainer,
-} from 'recharts';
+import RadarCharts from '@/components/modules/studentActivity/RadarCharts';
+import ActivityItem from '@/components/modules/studentActivity/ActivityItem';
+import ProgressBar from '@/components/modules/studentActivity/ProgressBar';
 
 const TABS = [
-  { key: 'all',      label: { th: 'ทั้งหมด',      en: 'All'        } },
-  { key: 'core',     label: { th: 'สมรรถนะ',      en: 'Competency' } },
-  { key: 'elective', label: { th: 'เลือกเข้าร่วม', en: 'Interest'   } },
+  { key: 'all', label: { th: 'ทั้งหมด', en: 'All' } },
+  { key: 'core', label: { th: 'สมรรถนะ', en: 'Competency' } },
+  { key: 'elective', label: { th: 'ความสนใจ', en: 'Electives' } },
 ];
-
-const RADAR_DATA_COMPETENCY = [
-  { subject: 'ทักษะการใช้ชีวิตอย่างมีความสุข', value: 80 },
-  { subject: 'ทักษะแห่งศตวรรษที่ 21',         value: 60 },
-  { subject: 'ทักษะการมีส่วนร่วม',             value: 40 },
-  { subject: 'ทักษะภาวะผู้นำ',                 value: 70 },
-  { subject: 'ทักษะภาษาต่างประเทศ',            value: 55 },
-  { subject: 'ทักษะการเป็นผู้ประกอบการ',       value: 55 },
-  { subject: 'ทักษะวิชาชีพ',                   value: 55 },
-  { subject: 'ทักษะดิจิทัลและเทคโนโลยี',       value: 55 },
-  { subject: 'คุณลักษณะความซื่อสัตย์',         value: 55 },
-];
-
-const RADAR_DATA_INTEREST = [
-  { subject: 'วิชาการ',              value: 30 },
-  { subject: 'ประชาธิปไตย',          value: 75 },
-  { subject: 'ภูมิใจในมหาวิทยาลัย',  value: 60 },
-  { subject: 'ศิลปวัฒนธรรมและศาสนา', value: 45 },
-  { subject: 'สุขภาพกายและใจ',       value: 80 },
-  { subject: 'ความสุขและนันทนาการ',  value: 80 },
-  { subject: 'สังคมพหุวัฒนธรรม',     value: 80 },
-];
-
-const MOCK_ACTIVITIES = [
-  { id: 1, title: 'CTRL + O OPEN THE DOOR',    tag: 'สมรรถนะ',      tagColor: 'bg-psu-deep-blue-500', date: '14 พ.ย. 2568', hours: 6,  type: 'core'     },
-  { id: 2, title: 'ค่ายอาสาพัฒนาชนบท',         tag: 'เลือกเข้าร่วม', tagColor: 'bg-red-400',           date: '12 ต.ค. 2566', hours: 12, type: 'elective' },
-  { id: 3, title: 'อบรมทักษะดิจิทัลเบื้องต้น', tag: 'เลือกเข้าร่วม', tagColor: 'bg-red-400',           date: '05 ก.ค. 2566', hours: 3,  type: 'elective' },
-  { id: 4, title: 'CTRL + N New Character',    tag: 'สมรรถนะ',      tagColor: 'bg-psu-deep-blue-500', date: '14 ก.ย. 2568', hours: 6,  type: 'core'     },
-];
-
-const SUB_MENU_ITEMS = [
-  { key: 'register', icon: <FaCalendarAlt size={18} />, label: { th: 'ติดตามสถานะ\nโครงการ', en: 'Track\nProject'      }, path: '/student/register' },
-  { key: 'search',   icon: <FaSearch size={18} />,      label: { th: 'จองห้องประชุม',         en: 'Book\nMeeting Room' }, path: '/student/search'   },
-  { key: 'check',    icon: <FaClipboardList size={18} />, label: { th: 'แจ้งซ่อมพัสดุ',       en: 'Report\nRepair'     }, path: '/student/check'    },
-  { key: 'history',  icon: <FaHistory size={18} />,     label: { th: 'ยืม-คืนพัสดุ',          en: 'Borrow-\nReturn'    }, path: '/student/history'  },
-];
-
-const RadarCharts = ({ language }) => (
-  <div className="mb-6 grid grid-cols-2 gap-3">
-    <div className="rounded-2xl bg-white p-2 shadow-sm">
-      <p className="mb-1 text-center text-xs font-semibold text-psu-deep-blue-500">
-        {language === 'th' ? 'กิจกรรมเสริมสร้างสมรรถนะ' : 'Competency'}
-      </p>
-      <ResponsiveContainer width="100%" height={140}>
-        <RadarChart data={RADAR_DATA_COMPETENCY}>
-          <PolarGrid />
-          <PolarAngleAxis dataKey="subject" tick={{ fontSize: 7 }} />
-          <Radar dataKey="value" stroke="#003c71" fill="#003c71" fillOpacity={0.3} />
-        </RadarChart>
-      </ResponsiveContainer>
-    </div>
-
-    <div className="rounded-2xl bg-white p-2 shadow-sm">
-      <p className="mb-1 text-center text-xs font-semibold text-psu-deep-blue-500">
-        {language === 'th' ? 'กิจกรรมเลือกเข้าร่วม' : 'Interest'}
-      </p>
-      <ResponsiveContainer width="100%" height={140}>
-        <RadarChart data={RADAR_DATA_INTEREST}>
-          <PolarGrid />
-          <PolarAngleAxis dataKey="subject" tick={{ fontSize: 7 }} />
-          <Radar dataKey="value" stroke="#e53e3e" fill="#e53e3e" fillOpacity={0.3} />
-        </RadarChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-);
-
-const ProfileCard = ({ theUser, lineUser, language }) => (
-  <section className="bg-gray-50 px-4 pb-6 pt-5">
-    <div className="flex items-center gap-3 rounded-2xl bg-psu-sritrang-100 px-4 py-4 shadow-sm">
-      <div className="relative shrink-0">
-        <div className="h-14 w-14 overflow-hidden rounded-full bg-psu-deep-blue-300">
-          {lineUser?.pictureUrl && (
-            <img src={lineUser.pictureUrl} alt="avatar" className="h-full w-full object-cover" />
-          )}
-        </div>
-        {theUser?.isActivityLeader && (
-          <div className="absolute -left-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-yellow-400 text-[10px] shadow-md">
-            👑
-          </div>
-        )}
-      </div>
-
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-[15px] font-bold text-psu-deep-blue-500">
-          {theUser?.name?.[language] ?? '-'}
-        </p>
-        <p className="text-[13px] text-psu-deep-blue-400">{theUser?.psuId ?? '-'}</p>
-        <p className="truncate text-[11px] text-psu-deep-blue-300">
-          {language === 'th' ? 'คณะ' : 'Faculty'}:{' '}
-          {theUser?.facName?.[language] ?? theUser?.facName?.th ?? '-'}
-        </p>
-        <p className="truncate text-[11px] text-psu-deep-blue-300">
-          {theUser?.programName?.[language] ?? theUser?.programName?.th ?? '-'}
-        </p>
-        {theUser?.isActivityLeader && theUser?.activityRole && (
-          <span className="mt-0.5 inline-block rounded-full border border-yellow-400 bg-yellow-100 px-2 py-0.5 text-[10px] font-semibold text-yellow-700">
-            {theUser.activityRole[language] ?? theUser.activityRole.th}
-          </span>
-        )}
-      </div>
-    </div>
-  </section>
-);
-
-const ProgressBar = ({ value, color }) => (
-  <div className="h-1.5 w-full rounded-full bg-gray-200">
-    <div className={`h-1.5 rounded-full ${color}`} style={{ width: `${value}%` }} />
-  </div>
-);
-
-const ActivityItem = ({ item, language }) => (
-  <button className="flex w-full items-center justify-between rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-sm transition active:scale-95">
-    <div className="flex-1 text-left">
-      <p className="line-clamp-1 text-[13px] font-semibold text-gray-900">{item.title}</p>
-      <p className="mt-0.5 text-[11px] text-gray-400">
-        {item.date} • {item.hours} {language === 'th' ? 'ชม.' : 'hrs.'}
-      </p>
-    </div>
-    <div className="flex shrink-0 items-center gap-2">
-      <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold text-white ${item.tagColor}`}>
-        {item.tag}
-      </span>
-      <FaChevronRight size={11} className="text-gray-300" />
-    </div>
-  </button>
-);
-
-const SubMenuItem = ({ item, language, onClick }) => (
-  <button onClick={onClick} className="flex flex-col items-center gap-1.5 transition active:scale-95">
-    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-psu-sritrang-100 text-psu-deep-blue-500">
-      {item.icon}
-    </div>
-    <span className="whitespace-pre-line text-center text-[10px] leading-tight text-gray-600">
-      {item.label[language]}
-    </span>
-  </button>
-);
 
 const StudentActivity = () => {
-  const { language, theUser, lineUser } = useContext(Context);
-  const navigate = useNavigate();
+  const { language } = useContext(Context);
 
   const [showChart, setShowChart] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
+  const [showAll, setShowAll] = useState(false);
+  const [activityData, setActivityData] = useState(null);
+  const [fetchError, setFetchError] = useState(null);
 
-  const filteredActivities = MOCK_ACTIVITIES.filter(
-    (item) => activeTab === 'all' || item.type === activeTab,
-  );
+  useEffect(() => { fetchActivityData(); }, [language]);
+  useEffect(() => { setShowAll(false); }, [activeTab]);
+
+  const fetchActivityData = async () => {
+    try {
+      setFetchError(null);
+      const data = await getActivityData();
+      const formattedEvents = (data.events || []).map((item) => {
+        const isCore = item.hour?.title === 'competencies';
+        return {
+          id: item._id,
+          title: item.title?.[language] || item.title?.th || '-',
+          tag: isCore ? (language === 'th' ? 'สมรรถนะ' : 'Competency') : (language === 'th' ? 'สนใจ' : 'Elective'),
+          tagColor: isCore ? 'bg-[#89CEFF]' : 'bg-[#FFC0C1]',
+          type: isCore ? 'core' : 'elective',
+          hours: item.hour?.total || 0,
+          date: item.start ? new Date(item.start).toLocaleDateString(language === 'th' ? 'th-TH' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '-',
+          competencyValues: item.hour?.competencies || [],
+          electiveValues: item.hour?.electives || [],
+        };
+      });
+      const coreHours = formattedEvents.filter(i => i.type === 'core').reduce((s, i) => s + i.hours, 0);
+      const electiveHours = formattedEvents.filter(i => i.type === 'elective').reduce((s, i) => s + i.hours, 0);
+      const competencyTotals = Array(9).fill(0);
+      const electiveTotals = Array(7).fill(0);
+      formattedEvents.forEach(item => {
+        item.competencyValues.forEach((v, idx) => { competencyTotals[idx] += v; });
+        item.electiveValues.forEach((v, idx) => { electiveTotals[idx] += v; });
+      });
+      setActivityData({ ...data, events: formattedEvents, coreHours, electiveHours, competencyTotals, electiveTotals });
+    } catch (err) {
+      console.error(err);
+      setFetchError(language === 'th' ? 'โหลดข้อมูลไม่สำเร็จ' : 'Failed to load data');
+    }
+  };
+
+  const filteredActivities = activityData?.events?.filter(i => activeTab === 'all' || i.type === activeTab) || [];
+  const displayedActivities = showAll ? filteredActivities : filteredActivities.slice(0, 5);
 
   return (
-    <div className="relative min-h-screen w-full bg-gray-50">
-      <ProfileCard theUser={theUser} lineUser={lineUser} language={language} />
+    <div className="min-h-screen bg-white px-4 pb-32 pt-5">
 
-      <div className="px-4 pb-32">
-        {/* Progress Card */}
-        <p className="mb-2 text-[15px] font-bold text-gray-900">
-          {language === 'th' ? 'ชั่วโมงกิจกรรม' : 'Activity Hours'}
-        </p>
+      {/* TITLE */}
+      <p className="mb-3 text-[22px] font-bold text-gray-900">
+        {language === 'th' ? 'กิจกรรมนักศึกษา' : 'Student Activity'}
+      </p>
 
-        <div className="relative mb-8 rounded-2xl bg-psu-sritrang-100 p-4 pb-6">
+      {fetchError && (
+        <p className="mb-3 rounded-xl bg-red-50 px-4 py-2 text-[13px] text-red-500">{fetchError}</p>
+      )}
+
+      <div className="relative mb-14">
+
+        <div className="relative z-10 rounded-[24px] bg-[#F6F9FE] p-4 shadow-[0_6px_16px_rgba(0,0,0,0.12)]">
           <p className="mb-3 text-[12px] font-semibold text-psu-deep-blue-500">
-            {language === 'th' ? 'ความคืบหน้ากิจกรรม' : 'Activity Progress'}
+            {language === 'th' ? 'ชั่วโมงกิจกรรม' : 'Activity Hours'}
           </p>
-
           <div className="space-y-3">
             <div>
               <div className="mb-1 flex items-center justify-between">
                 <div className="flex items-center gap-1">
-                  <FaShieldAlt size={10} className="text-psu-deep-blue-500" />
-                  <p className="text-[11px] text-gray-600">
-                    {language === 'th' ? 'กิจกรรมเสริมสร้างสมรรถนะ' : 'Character Building'}
-                  </p>
+                  <FaStar size={10} className="text-[#4B8CD2]" />
+                  <p className="text-[11px] text-gray-600">{language === 'th' ? 'กิจกรรมเสริมสร้างสมรรถนะ' : 'Competency'}</p>
                 </div>
-                <p className="text-[11px] font-semibold text-psu-deep-blue-500">40/50</p>
+                <p className="text-[11px] font-semibold text-[#4B8CD2]">{activityData?.coreHours || 0}/{activityData?.hrsTarget?.competencies || 50}</p>
               </div>
-              <ProgressBar value={80} color="bg-psu-deep-blue-500" />
+              <ProgressBar value={((activityData?.coreHours || 0) / (activityData?.hrsTarget?.competencies || 50)) * 100} color="bg-[#4B8CD2]" />
             </div>
-
             <div>
               <div className="mb-1 flex items-center justify-between">
                 <div className="flex items-center gap-1">
-                  <FaHeart size={10} className="text-red-400" />
-                  <p className="text-[11px] text-gray-600">
-                    {language === 'th' ? 'กิจกรรมเลือกเข้าร่วม' : 'Interest Activities'}
-                  </p>
+                  <FaHeart size={10} className="text-[#F33939]" />
+                  <p className="text-[11px] text-gray-600">{language === 'th' ? 'กิจกรรมเข้าร่วมตามความสนใจ' : 'Electives'}</p>
                 </div>
-                <p className="text-[11px] font-semibold text-red-500">25/50</p>
+                <p className="text-[11px] font-semibold text-[#F33939]">{activityData?.electiveHours || 0}/{activityData?.hrsTarget?.electives || 50}</p>
               </div>
-              <ProgressBar value={50} color="bg-red-400" />
+              <ProgressBar value={((activityData?.electiveHours || 0) / (activityData?.hrsTarget?.electives || 50)) * 100} color="bg-[#FF3939]" />
             </div>
           </div>
-
-          <div className="absolute -bottom-4 left-1/2 -translate-x-1/2">
-            <button
-              onClick={() => setShowChart((prev) => !prev)}
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-400 shadow-md transition active:scale-95"
-            >
-              <span className={`transition-transform duration-300 ${showChart ? 'rotate-180' : ''}`}>
-                <FaAngleDown />
-              </span>
-            </button>
-          </div>
         </div>
 
-        {showChart && <RadarCharts language={language} />}
-
-        {/* Download Transcript */}
-        <div
-          className="mb-5 flex flex-col overflow-hidden rounded-2xl bg-cover bg-center px-4 py-4"
-          style={{ backgroundImage: `url(${dow})` }}
-        >
-          <p className="text-[11px] text-psu-deep-blue-400">
-            {language === 'th' ? 'ดาวน์โหลด' : 'Download'}
-          </p>
-          <p className="text-[14px] font-semibold text-psu-deep-blue-500">
-            {language === 'th' ? 'ใบประมวลผลกิจกรรมนักศึกษา' : 'Student Activity Transcript'}
-          </p>
-          <button className="mt-2 flex w-fit items-center gap-1.5 rounded-full bg-psu-andaman-blue-500 px-3 py-1.5 text-[11px] font-semibold text-white transition active:scale-95">
-            <FaDownload size={10} />
-            {language === 'th' ? 'ดาวน์โหลดเลย' : 'Download'}
-          </button>
+        <div className="absolute -bottom-12 right-4 z-0">
+          <motion.button
+            onClick={() => setShowChart(prev => !prev)}
+            animate={!showChart ? { y: [0, 4, 0] } : { y: 0 }}
+            transition={!showChart ? { repeat: Infinity, duration: 2, ease: 'easeInOut' } : {}}
+            whileTap={{ scale: 0.9 }}
+            className="focus:outline-none"
+          >
+            <img
+              src={spider}
+              alt="spider"
+              className="w-14 h-14 object-contain drop-shadow-md"
+            />
+          </motion.button>
         </div>
 
-        {/* Activity History */}
-        <p className="mb-2 text-[15px] font-bold text-gray-900">
-          {language === 'th' ? 'ประวัติกิจกรรม' : 'Activity History'}
-        </p>
+      </div>
 
-        {/* Tab Filter */}
-        <div className="mb-3 flex gap-2">
-          {TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`rounded-full px-3 py-1.5 text-[12px] font-medium transition ${
-                activeTab === tab.key
-                  ? 'bg-psu-deep-blue-500 text-white'
-                  : 'bg-gray-100 text-gray-500'
+      {/* CHART slide down */}
+      <AnimatePresence>
+        {showChart && (
+          <motion.div
+            key="chart"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.35, ease: 'easeInOut' }}
+            className="overflow-hidden mb-4 mt-2"
+          >
+            <RadarCharts
+              language={language}
+              competencyData={activityData?.competencyTotals || []}
+              electiveData={activityData?.electiveTotals || []}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {!showChart && <div className="mt-4" />}
+
+      {/* HISTORY */}
+      <p className="mb-2 text-[15px] font-bold text-gray-900">
+        {language === 'th' ? 'ประวัติกิจกรรม' : 'Activity History'}
+      </p>
+
+      <div className="mb-3 flex gap-2 overflow-x-auto">
+        {TABS.map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[12px] font-medium transition ${activeTab === tab.key ? 'bg-[#4B8CD2] text-white' : 'bg-gray-100 text-gray-500'
               }`}
-            >
-              {tab.label[language]}
-            </button>
-          ))}
-        </div>
+          >
+            {tab.label[language]}
+          </button>
+        ))}
+      </div>
 
-        {/* Activity List */}
-        <div className="mb-6 space-y-2">
-          {filteredActivities.length === 0 ? (
-            <p className="py-6 text-center text-[13px] text-gray-400">
-              {language === 'th' ? 'ไม่มีกิจกรรมในหมวดนี้' : 'No activities in this category'}
-            </p>
-          ) : (
-            filteredActivities.map((item) => (
-              <ActivityItem key={item.id} item={item} language={language} />
-            ))
-          )}
-        </div>
-
-        {/* Sub Menu — เฉพาะนักกิจกรรม */}
-        {theUser?.isActivityLeader && (
+      <div className="space-y-2">
+        {filteredActivities.length === 0 ? (
+          <p className="py-6 text-center text-[13px] text-gray-400">
+            {language === 'th' ? 'ไม่มีกิจกรรมในหมวดนี้' : 'No activities in this category'}
+          </p>
+        ) : (
           <>
-            <p className="mb-1 text-[13px] font-semibold text-gray-700">
-              {language === 'th' ? 'เมนูสำหรับนักกิจกรรม' : 'Activity Menu'}
-            </p>
-            <p className="mb-3 text-[11px] text-gray-400">
-              {language === 'th'
-                ? 'เมนูพิเศษเฉพาะนักกิจกรรม / กรรมการ / ผู้ดูแลโครงการ'
-                : 'Special menu for activity members / committees / project supervisors'}
-            </p>
-            <div className="grid grid-cols-4 gap-3">
-              {SUB_MENU_ITEMS.map((item) => (
-                <SubMenuItem
-                  key={item.key}
-                  item={item}
-                  language={language}
-                  onClick={() => navigate(item.path)}
-                />
-              ))}
-            </div>
+            {displayedActivities.map(item => (
+              <ActivityItem key={item.id} item={item} language={language} />
+            ))}
+            {!showAll && filteredActivities.length > 5 && (
+              <button
+                onClick={() => setShowAll(true)}
+                className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-2xl border border-gray-200 bg-white py-3 text-[13px] font-medium text-psu-deep-blue-500 shadow-sm transition active:scale-95"
+              >
+                {language === 'th' ? 'ดูทั้งหมด' : 'See all'}
+                <FaChevronRight size={11} />
+              </button>
+            )}
           </>
         )}
       </div>
+
     </div>
   );
 };

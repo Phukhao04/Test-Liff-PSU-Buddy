@@ -14,7 +14,7 @@ export default defineConfig({
     port: 3000,
     hmr: {
     protocol: 'wss',
-    host: 'tutor-constant-ahoy.ngrok-free.dev', // ใส่โดเมน ngrok ของคุณ
+    host: 'tutor-constant-ahoy.ngrok-free.dev', 
   },
   },
 });

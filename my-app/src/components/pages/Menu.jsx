@@ -1,118 +1,78 @@
 import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Context from '@/contexts/Context';
-import Service from '@/assets/img/Service.png';
-import {
-  FaBuilding, FaBookOpen, FaShieldAlt, FaPhoneAlt,
-  FaCalendarCheck, FaGift, FaBus, FaRunning,
-  FaBullhorn, FaBoxOpen, FaPlayCircle, FaIdBadge,
-  FaGraduationCap, FaChartBar,
-} from 'react-icons/fa';
-import { FaBahtSign } from 'react-icons/fa6';
+import { TbArrowUpRight } from 'react-icons/tb'
 
-const LANGS = {
-  sectionService:  { th: 'บริการทั่วไป',       en: 'Services' },
-  sectionActivity: { th: 'กิจกรรม & สิทธิพิเศษ', en: 'Activities & Privileges' },
-  sectionOther:    { th: 'บริการอื่นๆ',         en: 'Other Services' },
-  sectionLearning: { th: 'การเรียน',            en: 'Learning' },
-  pleaseLogin:     { th: 'กรุณาเข้าสู่ระบบเพื่อใช้งานเมนู', en: 'Please login to use services' },
-};
-
-const buildSections = (language) => [
+const menuCards = [
   {
-    title: LANGS.sectionService[language],
-    items: [
-      { label: language === 'th' ? 'ทุนการศึกษา/กยศ.' : 'Scholarship', icon: <FaBahtSign />,      color: 'text-gray-900',   bg: 'bg-[#EEF2FF]', path: '/scholarship/' },
-      { label: language === 'th' ? 'สุขภาพ'           : 'Health',       icon: <FaBookOpen />,      color: 'text-blue-500',   bg: 'bg-[#EEF2FF]', path: '/well-being/' },
-      { label: language === 'th' ? 'ประกันอุบัติเหตุ' : 'Insurance',    icon: <FaShieldAlt />,     color: 'text-yellow-500', bg: 'bg-[#EEF2FF]', path: '/others/' },
-      { label: language === 'th' ? 'เบอร์ติดต่อฉุกเฉิน': 'Emergency',  icon: <FaPhoneAlt />,      color: 'text-gray-900',   bg: 'bg-[#EEF2FF]', path: '/others/' },
-    ],
+    title: { th: 'ชั่วโมงกิจกรรม', en: 'Activity Hours' },
+    path: '/student',
   },
   {
-    title: LANGS.sectionActivity[language],
-    items: [
-      { label: language === 'th' ? 'กิจกรรม'     : 'Activities',   icon: <FaCalendarCheck />, color: 'text-pink-500',   bg: 'bg-[#EEF2FF]', path: '/student/' },
-      { label: language === 'th' ? 'สิทธิพิเศษ'  : 'Privileges',   icon: <FaGift />,          color: 'text-gray-900',   bg: 'bg-[#EEF2FF]', path: '/others/' },
-      { label: language === 'th' ? 'หอพัก'       : 'Dormitory',    icon: <FaBuilding />,      color: 'text-indigo-600', bg: 'bg-[#EEF2FF]', path: '/dormitory/' },
-      { label: language === 'th' ? 'ติดตามรถบัส' : 'Bus Tracking', icon: <FaBus />,           color: 'text-yellow-500', bg: 'bg-[#EEF2FF]', path: '/others/' },
-    ],
+    title: { th: 'ทุนการศึกษา', en: 'Scholarship' },
+    path: '/scholarship',
   },
   {
-    title: LANGS.sectionOther[language],
-    items: [
-      { label: language === 'th' ? 'จองสนามกีฬา'           : 'Booking',     icon: <FaRunning />,  color: 'text-blue-500',   bg: 'bg-[#EEF2FF]', path: '/others/' },
-      { label: language === 'th' ? 'ผลการประเมิน PSU Style' : 'PSU Style',   icon: <FaChartBar />, color: 'text-indigo-500', bg: 'bg-[#EEF2FF]', path: '/others/' },
-      { label: language === 'th' ? 'แบบฟอร์มร้องเรียน'     : 'Complaint',   icon: <FaBullhorn />, color: 'text-gray-900',   bg: 'bg-[#EEF2FF]', path: '/others/' },
-      { label: language === 'th' ? 'แจ้งของหาย'             : 'Lost & Found',icon: <FaBoxOpen />,  color: 'text-gray-900',   bg: 'bg-[#EEF2FF]', path: '/others/' },
-    ],
+    title: { th: 'ระบบทดสอบ\nสมรรถนะ', en: 'Competency\nTest' },
+    path: '/competency',
   },
   {
-    title: LANGS.sectionLearning[language],
-    items: [
-      { label: 'MOOC', icon: <FaPlayCircle />,   color: 'text-indigo-500', bg: 'bg-[#EEF2FF]', path: '/others/' },
-      { label: 'LMS',  icon: <FaBookOpen />,     color: 'text-yellow-500', bg: 'bg-[#EEF2FF]', path: '/others/' },
-      { label: 'LibX', icon: <FaIdBadge />,      color: 'text-indigo-500', bg: 'bg-[#EEF2FF]', path: '/others/' },
-      { label: 'SIS',  icon: <FaGraduationCap />,color: 'text-blue-500',   bg: 'bg-[#EEF2FF]', path: '/student/' },
-    ],
+    title: { th: 'ฉุกเฉิน', en: 'Emergency' },
+    path: '/emergency',
+  },
+  {
+    title: { th: 'รวมลิงก์', en: 'Links' },
+    path: '/links',
+  },
+  {
+    title: { th: 'หอพัก', en: 'Dormitory' },
+    path: '/dormitory',
   },
 ];
 
-const ServiceSection = ({ title, items, navigate }) => (
-  <section className="rounded-2xl bg-white px-4 py-5 shadow-sm">
-    <div className="grid grid-cols-4 gap-5">
-      {items.map((item, i) => (
-        <button
-          key={i}
-          onClick={() => navigate(item.path)}
-          className="flex flex-col items-center gap-2 transition active:scale-95"
-        >
-          <div className={`flex h-14 w-14 items-center justify-center rounded-full ${item.bg}`}>
-            <span className={`text-[24px] ${item.color}`}>{item.icon}</span>
-          </div>
-          <span className="min-h-8 text-center text-[11px] leading-tight text-gray-700">
-            {item.label}
-          </span>
-        </button>
-      ))}
-    </div>
-  </section>
-);
-
 const Menu = () => {
-  const { theUser, language } = useContext(Context);
+  const { language } = useContext(Context);
   const navigate = useNavigate();
-  const sections = buildSections(language);
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-gray-100">
+    <div className="relative min-h-screen w-full bg-white pb-24">
+      <div className="grid grid-cols-2 gap-4 px-4 pt-5">
+        {menuCards.map((card, index) => (
+          <div key={index} className="relative">
+            <button
+              onClick={() => navigate(card.path)}
+              className="relative w-full min-h-[130px] p-4 text-left active:scale-[0.97] transition-transform"
+              style={{ background: 'none', border: 'none' }}
+            >
+              <svg
+                className="absolute inset-0 w-full h-full"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+                xmlns="http://www.w3.org/2000/svg"
+                style={{ filter: 'drop-shadow(0 4px 18px rgba(0,0,0,0.10))' }}
+              >
+                <path
+                  d="M15,0 L62,0 A38,38 0 0,0 100,38 L100,85 Q100,100 85,100 L15,100 Q0,100 0,85 L0,15 Q0,0 15,0 Z"
+                  fill="#dfe7f7"
+                />
+              </svg>
 
-      {/* Hero */}
-      <section
-        className=" -mt-5 relative h-64 w-full bg-contain bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${Service})` }}
-      />
+              <div className="relative z-10 mt-6">
+                <h2 className="whitespace-pre-line text-[14px] font-semibold leading-snug text-[#1a2a44] max-w-[55%]">
+                  {card.title[language]}
+                </h2>
+              </div>
+            </button>
 
-      {/* Main */}
-      <div className="relative -mt-12 rounded-t-[28px] bg-white px-5 pb-32 pt-6 shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
-
-        {!theUser && (
-          <div className="rounded-xl bg-gray-50 p-5 text-center text-[13px] text-gray-600">
-            {LANGS.pleaseLogin[language]}
+            {/* ปุ่ม ↗ ลอยมุมขวาบน */}
+            <div
+              className="absolute flex items-center justify-center rounded-full bg-[#b8cfe8] pointer-events-none z-10"
+              style={{ width: 40, height: 40, top: -8, right: -8 }}
+            >
+              <TbArrowUpRight size={20} color="#3a5a80" />
+            </div>
           </div>
-        )}
-
-        {theUser?.psuType === 'student' && (
-          <div className="space-y-5">
-            {sections.map((section, i) => (
-              <ServiceSection
-                key={i}
-                title={section.title}
-                items={section.items}
-                navigate={navigate}
-              />
-            ))}
-          </div>
-        )}
+        ))}
       </div>
     </div>
   );
