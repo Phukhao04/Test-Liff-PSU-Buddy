@@ -1,32 +1,48 @@
 import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import liff from '@line/liff';
+
 import Context from '@/contexts/Context';
-import { TbArrowUpRight } from 'react-icons/tb'
+import MenuCard from '@/components/modules/Button/MenuButton';
+
+import ActivityIcon   from '@/assets/icons/Activity.svg?react';
+import ChartIcon      from '@/assets/icons/Chart.svg?react';
+import HomeIcon       from '@/assets/icons/home.svg?react';
+import VectorIcon     from '@/assets/icons/Vector.svg?react';
+import ScolarshipIcon from '@/assets/icons/scolarship.svg?react';
+import EmergencyIcon  from '@/assets/icons/emergency.svg?react';
 
 const menuCards = [
   {
-    title: { th: 'ชั่วโมงกิจกรรม', en: 'Activity Hours' },
+    title: { th: 'ชั่วโมงกิจกรรม',      en: 'Activity Hours'  },
     path: '/student',
+    icon: <ActivityIcon   className="w-10 h-10" />,
   },
   {
-    title: { th: 'ทุนการศึกษา', en: 'Scholarship' },
+    title: { th: 'ทุนการศึกษา',          en: 'Scholarship'     },
     path: '/scholarship',
+    icon: <ScolarshipIcon className="w-10 h-10" />,
   },
   {
     title: { th: 'ระบบทดสอบ\nสมรรถนะ', en: 'Competency\nTest' },
     path: '/competency',
+    icon: <ChartIcon      className="w-10 h-10" />,
   },
   {
-    title: { th: 'ฉุกเฉิน', en: 'Emergency' },
+    title: { th: 'ฉุกเฉิน',              en: 'Emergency'       },
     path: '/emergency',
+    icon: <EmergencyIcon  className="w-10 h-10" />,
   },
   {
-    title: { th: 'รวมลิงก์', en: 'Links' },
-    path: '/links',
+    title: { th: 'หอพัก',               en: 'Dormitory'       },
+    path: 'https://dorm.psu.ac.th/system',
+    external: true,
+    icon: <HomeIcon       className="w-10 h-10" />,
   },
   {
-    title: { th: 'หอพัก', en: 'Dormitory' },
-    path: '/dormitory',
+    title: { th: 'รวมช่องทางเรียน',     en: 'Learning Links'  },
+    path: '/learning-links',
+    icon: <VectorIcon     className="w-10 h-10" />,
   },
 ];
 
@@ -34,44 +50,38 @@ const Menu = () => {
   const { language } = useContext(Context);
   const navigate = useNavigate();
 
+  const handleClick = (card) => {
+    if (card.external) {
+      liff.openWindow({ url: card.path, external: true });
+      return;
+    }
+    navigate(card.path);
+  };
+
   return (
-    <div className="relative min-h-screen w-full bg-white pb-24">
-      <div className="grid grid-cols-2 gap-4 px-4 pt-5">
+    <div
+      className="min-h-screen pb-24 px-4"
+      style={{
+        backgroundImage: 'radial-gradient(circle, #d8d8d8 1px, transparent 1.2px)',
+        backgroundSize: '18px 18px',
+      }}
+    >
+      <div className="pt-6 pb-4 text-center">
+        <h1 className="text-[32px] font-bold text-[#1c1c1c]">
+          {language === 'th' ? 'บริการ' : 'Services'}
+        </h1>
+      </div>
+
+      <div className="grid grid-cols-2 gap-x-5 gap-y-7">
         {menuCards.map((card, index) => (
-          <div key={index} className="relative">
-            <button
-              onClick={() => navigate(card.path)}
-              className="relative w-full min-h-[130px] p-4 text-left active:scale-[0.97] transition-transform"
-              style={{ background: 'none', border: 'none' }}
-            >
-              <svg
-                className="absolute inset-0 w-full h-full"
-                viewBox="0 0 100 100"
-                preserveAspectRatio="none"
-                xmlns="http://www.w3.org/2000/svg"
-                style={{ filter: 'drop-shadow(0 4px 18px rgba(0,0,0,0.10))' }}
-              >
-                <path
-                  d="M15,0 L62,0 A38,38 0 0,0 100,38 L100,85 Q100,100 85,100 L15,100 Q0,100 0,85 L0,15 Q0,0 15,0 Z"
-                  fill="#dfe7f7"
-                />
-              </svg>
-
-              <div className="relative z-10 mt-6">
-                <h2 className="whitespace-pre-line text-[14px] font-semibold leading-snug text-[#1a2a44] max-w-[55%]">
-                  {card.title[language]}
-                </h2>
-              </div>
-            </button>
-
-            {/* ปุ่ม ↗ ลอยมุมขวาบน */}
-            <div
-              className="absolute flex items-center justify-center rounded-full bg-[#b8cfe8] pointer-events-none z-10"
-              style={{ width: 40, height: 40, top: -8, right: -8 }}
-            >
-              <TbArrowUpRight size={20} color="#3a5a80" />
-            </div>
-          </div>
+          <MenuCard
+            key={index}
+            id={index}
+            label={card.title[language]}
+            onClick={() => handleClick(card)}
+          >
+            {card.icon}
+          </MenuCard>
         ))}
       </div>
     </div>

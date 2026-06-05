@@ -1,20 +1,20 @@
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import svgr from 'vite-plugin-svgr';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), svgr()],
+
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-  server: {
-    host: '0.0.0.0',
-    port: 3000,
-    hmr: {
-    protocol: 'wss',
-    host: 'tutor-constant-ahoy.ngrok-free.dev', 
-  },
-  },
+
+ server: {
+  host: true,
+  port: 3000,
+  allowedHosts: ['tutor-constant-ahoy.ngrok-free.dev'],
+}
 });

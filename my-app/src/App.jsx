@@ -1,51 +1,20 @@
 import { BrowserRouter } from 'react-router-dom';
-import Context from '@/contexts/Context';
-import Layout from '@/components/templates/Layout';
-import { useState } from 'react';
-import './index.css';
 
-const mockLiff = {
-  isLoggedIn: () => true,
-  login: () => alert('login'),
-  logout: () => alert('logout'),
-  closeWindow: () => alert('closeWindow'),
-};
-
-const mockLineUser = {
-  userId: 'mock-user-id',
-  displayName: 'PSU Buddy Dev',
-  pictureUrl: 'https://placehold.co/80x80/003c71/white?text=PSU',
-};
-
-const mockTheUser = {
-  psuType: 'student',
-  psuId: '6610210312',
-  name: { th: 'ภูวิศา รัญเวศ', en: 'Puvisa Runwet' },
-  campusName: { th: 'วิทยาเขตหาดใหญ่', en: 'Hat Yai Campus' },
-  eduLevel: { th: 'ปริญญาตรี', en: 'Bachelor' },
-  facName: { th: 'วิทยาศาสตร์', en: 'Science' },
-  deptName: { th: 'วิทยาการคำนวณ', en: 'Computational Science' },
-  programName: { th: 'เทคโนโลยีสารสนเทศและการสื่อสาร', en: 'Information and Communication Technology' },
-};
+import ContextProvider from './contexts/ContextProvider';
+import Layout from './components/templates/Layout';
+const isProduction = import.meta.env.MODE === 'production';
+const { VITE_basename } = import.meta.env;
+import './App.css';
 
 function App() {
-  const [language, setLanguage] = useState('th');
-
-  const switchLanguage = () => setLanguage((prev) => (prev === 'th' ? 'en' : 'th'));
-
   return (
-    <Context.Provider value={{
-      language, setLanguage, switchLanguage,
-      theUser: mockTheUser,
-      lineUser: mockLineUser,
-      liff: mockLiff,
-      isAuthDone: true,
-      isLiffError: false,
-    }}>
-      <BrowserRouter>
-        <Layout />
-      </BrowserRouter>
-    </Context.Provider>
+    <>
+      <ContextProvider>
+        <BrowserRouter basename={isProduction ? VITE_basename : '/'}>
+          <Layout />
+        </BrowserRouter>
+      </ContextProvider>
+    </>
   );
 }
 

@@ -1,17 +1,21 @@
 import { useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Context from '@/contexts/Context';
-import { FaHome, FaThLarge, FaUser, FaSignOutAlt } from 'react-icons/fa';
+import { FaHome, FaThLarge, FaSignOutAlt } from 'react-icons/fa';
+import useHaptic from '@/hooks/useHaptic';
 
 const navItems = [
-  { key: '/',       icon: <FaHome size={20} />,       label: 'Home' },
-  { key: '/menu',   icon: <FaThLarge size={20} />,    label: 'Menu' },
+  { key: '/home', icon: <FaHome size={20} />,    label: 'Home' },
+  { key: '/menu', icon: <FaThLarge size={20} />, label: 'Menu' },
 ];
 
 const Footer = () => {
-  const { liff } = useContext(Context);
-  const navigate = useNavigate();
-  const location = useLocation();
+  const { liff, character } = useContext(Context);
+  const navigate  = useNavigate();
+  const location  = useLocation();
+  const haptic    = useHaptic();
+
+  const primary = character?.color ?? '#4986FF';
 
   return (
     <nav className="fixed bottom-5 left-1/2 z-50 w-[92%] max-w-sm -translate-x-1/2">
@@ -21,10 +25,15 @@ const Footer = () => {
           return (
             <button
               key={item.key}
-              onClick={() => navigate(item.key)}
-              className={`flex h-11 w-11 items-center justify-center rounded-full transition ${
-                isActive ? 'bg-[#4986FF] text-white' : 'text-gray-400 hover:bg-gray-100'
-              }`}
+              onClick={() => {
+                haptic.medium();
+                navigate(item.key);
+              }}
+              className="flex h-11 w-11 items-center justify-center rounded-full transition"
+              style={{
+                backgroundColor: isActive ? primary : 'transparent',
+                color: isActive ? '#fff' : '#9ca3af',
+              }}
             >
               {item.icon}
             </button>
@@ -34,6 +43,7 @@ const Footer = () => {
         {/* Logout */}
         <button
           onClick={() => {
+            haptic.heavy();
             if (liff?.isLoggedIn?.()) {
               liff.logout();
               window.location.reload();

@@ -1,3 +1,91 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ─── Base reset สำหรับ LIFF / mobile webview ─────────────────── */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent; /* ลบ highlight สีเทาตอนแตะบน iOS/Android */
+  }
+
+  html {
+    /* ล็อก font-size ที่ 16px เป็นฐาน rem
+       ป้องกัน LINE browser บางรุ่น auto-scale ตัวอักษร */
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: 'Geist Variable', 'Noto Sans Thai', sans-serif;
+    font-size: 1rem;       /* 16px */
+    line-height: 1.5;
+    color: #1f2a44;
+    background: #e5e7eb;   /* สีพื้นหลังนอก shell */
+    overflow: hidden;      /* ป้องกัน body scroll — scroll อยู่ใน shell แทน */
+    overscroll-behavior: none;
+  }
+
+  /* ป้องกัน image/video ล้น container */
+  img,
+  video {
+    max-width: 100%;
+    display: block;
+  }
+
+  /* ปรับ tap target ขั้นต่ำ 44px ตาม WCAG / Apple HIG */
+  button,
+  a,
+  [role='button'] {
+    min-height: 44px;
+    min-width: 44px;
+    cursor: pointer;
+  }
+
+  /* ซ่อน scrollbar แต่ยังเลื่อนได้ */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* ─── Typography scale สำหรับ mobile ──────────────────────────── */
+/* หน้าแอปใช้ขนาดเหล่านี้เป็นหลัก เพื่อให้อ่านง่ายบนจอ ~390px    */
+@layer components {
+  .text-display  { @apply text-[22px] font-bold   leading-tight tracking-tight; }
+  .text-heading  { @apply text-[18px] font-bold   leading-snug;  }
+  .text-subhead  { @apply text-[15px] font-semibold leading-snug; }
+  .text-body     { @apply text-[14px] font-normal leading-relaxed; }
+  .text-caption  { @apply text-[12px] font-normal leading-normal text-gray-500; }
+  .text-micro    { @apply text-[11px] font-normal leading-normal text-gray-400; }
+}
+
+@font-face {
+  font-family: 'PSU Stidti';
+  src: url('./assets/fonts/psu-stidti-light.woff2') format('woff2');
+  font-weight: 300;
+}
+
+@font-face {
+  font-family: 'PSU Stidti';
+  src: url('./assets/fonts/psu-stidti-regular.woff2') format('woff2');
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'PSU Stidti';
+  src: url('./assets/fonts/psu-stidti-bold.woff2') format('woff2');
+  font-weight: 700;
+}
+
+html,
+body,
+#root {
+  font-family: 'PSU Stidti', sans-serif;
+}

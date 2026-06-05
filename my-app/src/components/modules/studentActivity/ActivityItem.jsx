@@ -3,29 +3,52 @@ import { FaChevronRight } from 'react-icons/fa';
 const ActivityItem = ({
   item,
   language,
-}) => (
-  <button className="flex w-full items-center justify-between rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-sm transition active:scale-95">
-    <div className="flex-1 text-left">
-      <p className="line-clamp-1 text-[13px] font-semibold text-gray-900">
-        {item.title}
-      </p>
+  onClick,
+}) => {
+  const content = (
+    <>
+      <div className="flex-1 text-left">
+        <p className="line-clamp-1 text-base font-semibold text-gray-900">
+          {item.title}
+        </p>
+        <p className="mt-0.5 text-xs text-gray-400">
+          {item.date} • {item.hours}{' '}
+          {language === 'th' ? 'ชม.' : 'hrs.'}
+        </p>
+      </div>
 
-      <p className="mt-0.5 text-[11px] text-gray-400">
-        {item.date} • {item.hours}{' '}
-        {language === 'th'
-          ? 'ชม.'
-          : 'hrs.'}
-      </p>
-    </div>
+      <div className="flex shrink-0 items-center gap-2">
+        {/* text-[10px] → text-xs (11px) — tag badge */}
+        <span
+          className={`rounded-full px-2 py-0.5 text-xs font-semibold text-white ${item.tagColor}`}
+        >
+          {item.tag}
+        </span>
+        {onClick && <FaChevronRight size={11} className="text-gray-300" />}
+      </div>
+    </>
+  );
 
-    <div className="flex shrink-0 items-center gap-2">
-      <span
-        className={`rounded-full px-2 py-0.5 text-[10px] font-semibold text-white ${item.tagColor}`}
+  const baseClass =
+    'flex w-full items-center justify-between rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-sm transition';
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={`${baseClass} active:scale-95`}
       >
-        {item.tag}
-      </span>
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <div className={baseClass}>
+      {content}
     </div>
-  </button>
-);
+  );
+};
 
 export default ActivityItem;

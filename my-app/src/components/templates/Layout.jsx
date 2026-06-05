@@ -7,242 +7,98 @@ import Context from '@/contexts/Context';
 import Loading from './Loading';
 import Footer from './Footer';
 
-const SplashScreen = lazy(() =>
-  import('../pages/SplashScreen')
+const IntroScreen = lazy(() => import('../pages/IntroScreen'));
+const SplashScreen = lazy(() => import('../pages/SplashScreen'));
+const Home = lazy(() => import('../pages/Home'));
+const Menu = lazy(() => import('../pages/Menu'));
+const StudentActivity = lazy(() => import('../pages/studentActivity/StudentActivity'));
+const Emergency = lazy(() => import('../pages/Emergency'));
+const LearningLinks = lazy(() => import('../pages/LearningLinks'));
+const ChangeCharacter = lazy(() => import('../pages/ChangeCharacter'));
+
+
+// ─── Mobile Shell ────────────────────────────────────────────────
+// จำลอง viewport ของ mobile / LIFF
+// - บน device จริง: เต็มหน้าจอ (100dvh x 100vw)
+// - บน desktop dev: กรอบโทรศัพท์ขนาด 390x844 (iPhone 14 standard)
+const MobileShell = ({ children }) => (
+  <div className="flex min-h-screen w-full items-center justify-center bg-gray-200">
+    <div
+      className="
+        relative flex flex-col overflow-hidden bg-white
+        /* mobile จริง: เต็มจอ */
+        w-screen h-[100dvh]
+        /* desktop: จำกัดขนาด + เงา */
+        sm:w-[390px] sm:h-[844px] sm:rounded-[44px]
+        sm:shadow-[0_32px_80px_rgba(0,0,0,0.35)]
+      "
+    >
+      {children}
+    </div>
+  </div>
 );
 
-const Home = lazy(() =>
-  import('../pages/Home')
+// ─── Route wrapper ───────────────────────────────────────────────
+const Lazy = ({ children }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -20 }}
+    transition={{ duration: 0.3, ease: 'easeInOut' }}
+    className="h-full w-full"
+  >
+    <Suspense fallback={<Loading />}>
+      {children}
+    </Suspense>
+  </motion.div>
 );
-
-const Menu = lazy(() =>
-  import('../pages/Menu')
-);
-
-const Profile = lazy(() =>
-  import('../pages/Profile')
-);
-
-const StudentActivity = lazy(() =>
-  import('../pages/studentActivity/StudentActivity')
-);
-
-const Dormitory = lazy(() =>
-  import('../pages/dormitory/Dormitory')
-);
-
-const DormParcel = lazy(() =>
-  import('../pages/dormitory/DormParcel')
-);
-
-const TrackProject = lazy(() =>
-  import('../pages/studentActivity/TrackProject')
-);
-
-const TestRadar = lazy(() =>
-  import('../pages/TestRadar')
-);
-
-const FULL_SCREEN_PATHS = [
-  '/',
-  '/home',
-  '/menu',
-  '/profile',
-  '/student/',
-  '/dormitory/',
-  '/dormitory/parcel',
-  '/student/register',
-  '/test-radar',
-];
 
 const Layout = () => {
   const { isAuthDone, isLiffError } = useContext(Context);
-
   const location = useLocation();
 
-  const isFullScreen =
-    FULL_SCREEN_PATHS.includes(location.pathname);
-
-  if (!isAuthDone) {
-    return (
-      <Suspense fallback={<Loading />}>
-        <Loading />
-      </Suspense>
-    );
-  }
+if (!isAuthDone && location.pathname !== '/') {
+  return (
+    <Suspense fallback={<Loading />}>
+      <Loading />
+    </Suspense>
+  );
+}
 
   if (isLiffError) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-red-100 p-4">
-        <h1 className="mb-4 text-2xl font-bold text-red-600">
-          LIFF Initialization Error
-        </h1>
-
-        <p className="text-center text-red-500">
-          Please ensure that you are accessing this
-          application within the LINE app.
-        </p>
-      </div>
+      <MobileShell>
+        <div className="flex flex-col items-center justify-center h-full gap-3 p-6 text-center">
+          <p className="text-lg font-bold text-red-500">เกิดข้อผิดพลาด</p>
+          <p className="text-[13px] text-gray-500">
+            กรุณาเปิดแอปนี้ผ่าน LINE เท่านั้น
+          </p>
+        </div>
+      </MobileShell>
     );
   }
 
   return (
-    <>
-      <div
-        className={`min-h-screen overflow-auto text-psu-deep-blue-500 ${
-          isFullScreen
-            ? 'bg-white'
-            : 'flex flex-col items-center bg-linear-to-br from-psu-sritrang-200 to-psu-sritrang-500 p-3 pb-24'
-        }`}
-      >
-        <div
-          className={`grow w-full ${
-            isFullScreen ? '' : 'max-w-md'
-          }`}
-        >
-          <AnimatePresence mode="wait">
-            <Routes
-              location={location}
-              key={location.pathname}
-            >
-              {/* Splash */}
-              <Route
-                path="/"
-                element={
-                  <MotionRoute>
-                    <Suspense fallback={<Loading />}>
-                      <SplashScreen />
-                    </Suspense>
-                  </MotionRoute>
-                }
-              />
-
-              {/* Home */}
-              <Route
-                path="/home"
-                element={
-                  <MotionRoute>
-                    <Suspense fallback={<Loading />}>
-                      <Home />
-                    </Suspense>
-                  </MotionRoute>
-                }
-              />
-
-              {/* Menu */}
-              <Route
-                path="/menu"
-                element={
-                  <MotionRoute>
-                    <Suspense fallback={<Loading />}>
-                      <Menu />
-                    </Suspense>
-                  </MotionRoute>
-                }
-              />
-
-              {/* Profile */}
-              <Route
-                path="/profile"
-                element={
-                  <MotionRoute>
-                    <Suspense fallback={<Loading />}>
-                      <Profile />
-                    </Suspense>
-                  </MotionRoute>
-                }
-              />
-
-              {/* Student Activity */}
-              <Route
-                path="/student/"
-                element={
-                  <MotionRoute>
-                    <Suspense fallback={<Loading />}>
-                      <StudentActivity />
-                    </Suspense>
-                  </MotionRoute>
-                }
-              />
-
-              {/* Dormitory */}
-              <Route
-                path="/dormitory/"
-                element={
-                  <MotionRoute>
-                    <Suspense fallback={<Loading />}>
-                      <Dormitory />
-                    </Suspense>
-                  </MotionRoute>
-                }
-              />
-
-              {/* Dorm Parcel */}
-              <Route
-                path="/dormitory/parcel"
-                element={
-                  <MotionRoute>
-                    <Suspense fallback={<Loading />}>
-                      <DormParcel />
-                    </Suspense>
-                  </MotionRoute>
-                }
-              />
-
-              {/* Track Project */}
-              <Route
-                path="/student/register"
-                element={
-                  <MotionRoute>
-                    <TrackProject />
-                  </MotionRoute>
-                }
-              />
-
-              {/* Test Radar */}
-              <Route
-                path="/test-radar"
-                element={
-                  <MotionRoute>
-                    <Suspense fallback={<Loading />}>
-                      <TestRadar />
-                    </Suspense>
-                  </MotionRoute>
-                }
-              />
-            </Routes>
-          </AnimatePresence>
-        </div>
+    <MobileShell>
+      {/* scroll area — เว้นล่างให้ footer floating */}
+      <div className={`relative h-full w-full overflow-y-auto overflow-x-hidden ${location.pathname === '/change-character' ? '' : 'pb-24'}`}>
+        <AnimatePresence mode="wait">
+          <Routes location={location} key={location.pathname}>
+            <Route path="/" element={<Lazy><IntroScreen /></Lazy>} />
+            <Route path="/splash" element={<Lazy><SplashScreen /></Lazy>} />  {/* เพิ่ม */}
+            <Route path="/home" element={<Lazy><Home /></Lazy>} />
+            <Route path="/menu" element={<Lazy><Menu /></Lazy>} />
+            <Route path="/student" element={<Lazy><StudentActivity /></Lazy>} />
+            <Route path="/emergency" element={<Lazy><Emergency /></Lazy>} />
+            <Route path="/learning-links" element={<Lazy><LearningLinks /></Lazy>} />
+            <Route path="/change-character" element={<Lazy><ChangeCharacter /></Lazy>} />
+          </Routes>
+        </AnimatePresence>
       </div>
 
-      {/* Hide footer on splash screen */}
       {location.pathname !== '/' && <Footer />}
-    </>
+    </MobileShell>
   );
 };
-
-const MotionRoute = ({ children }) => (
-  <motion.div
-    initial={{
-      opacity: 0,
-      y: 20,
-    }}
-    animate={{
-      opacity: 1,
-      y: 0,
-    }}
-    exit={{
-      opacity: 0,
-      y: -20,
-    }}
-    transition={{
-      duration: 0.3,
-      ease: 'easeInOut',
-    }}
-    className="h-full w-full"
-  >
-    {children}
-  </motion.div>
-);
 
 export default Layout;
