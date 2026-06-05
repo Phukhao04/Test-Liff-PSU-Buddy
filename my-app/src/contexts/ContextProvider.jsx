@@ -1,114 +1,124 @@
 import { useState, useEffect } from 'react';
-
 import Axios from '../config/Axios';
 import Context from './Context';
-
 import liff from '@line/liff';
 
+const IS_LOCAL = window.location.hostname === 'localhost';
+
 const ContextProvider = ({ children }) => {
-  const [token, setToken] = useState(null);
-  const [theUser, setTheUser] = useState(null);
-  const [lineUser, setLineUser] = useState(null);
-  const [isAuth, setIsAuth] = useState(false);
-  const [isAuthDone, setAuthDone] = useState(false);
-  const [isLiffError, setLiffError] = useState(false);
+  const [token,       setToken]    = useState(null);
+  const [theUser,     setTheUser]  = useState(null);
+  const [lineUser,    setLineUser] = useState(null);
+  const [isAuth,      setIsAuth]   = useState(false);
+  const [isAuthDone,  setAuthDone] = useState(false);
+  const [isLiffError, setLiffError]= useState(false);
+  const [language,    setLanguage] = useState('th');
 
-  const [language, setLanguage] = useState('th');
+  const [character, setCharacter] = useState(() => {
+    try {
+      const saved = localStorage.getItem('character');
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
+  });
+
+  useEffect(() => { getLanguage(); }, []);
 
   useEffect(() => {
-    getLanguage();
-  }, []);
+    if (character) localStorage.setItem('character', JSON.stringify(character));
+  }, [character]);
 
+  // ── LIFF / Mock init ───────────────────────────────────────────
   useEffect(() => {
-    auth();
-  }, [token]);
-
-  useEffect(() => {
-    liff_function();
-    liff.ready.then(async () => {
-      // console.log('liff_ready');
+    const initAuth = async () => {
       try {
-        // console.log(liff.isLoggedIn());
-
-        if (liff.isLoggedIn()) {
-          const profile = await liff.getProfile();
-          const getIdToken = liff.getIDToken();
-
-          // throw new Error('Test liff error handling');
+        // ── DEV localhost: ข้าม LIFF init ────────────────────────
+        if (IS_LOCAL) {
+          console.log('DEV MODE: skip LIFF init');
           const myres = await Axios.post(
             'liff/verify',
-            {
-              idToken: getIdToken,
-            },
-            {
-              validateStatus: false,
-            },
+            { idToken: 'mock' },
+            { validateStatus: false },
           );
           if (myres.status === 200) {
-            setToken(() => {
-              return myres.data;
-            });
-          } else if (myres.status === 401) {
-            liff.logout();
-            liff.login({
-              redirectUri: import.meta.env.VITE_frontUrl_DEV,
-            });
-            return;
+            setToken(myres.data);
           } else {
-            // console.log(myres);
             setAuthDone(true);
           }
-
-          setLineUser(profile);
-
-          // setAuthDone(true);
-        } else {
-          liff.login({
-            redirectUri: import.meta.env.VITE_frontUrl_DEV,
-          });
+          return;
         }
+
+        // ── LIFF จริง ────────────────────────────────────────────
+        await liff.init({
+          liffId: import.meta.env.MODE === 'production'
+            ? import.meta.env.VITE_LIFF_PROD_ID
+            : import.meta.env.VITE_LIFF_DEV_ID,
+        });
+
+        if (!liff.isLoggedIn()) {
+          liff.login({ redirectUri: window.location.href });
+          return;
+        }
+
+        const profile    = await liff.getProfile();
+        const getIdToken = liff.getIDToken();
+
+        const myres = await Axios.post(
+          'liff/verify',
+          { idToken: getIdToken },
+          { validateStatus: false },
+        );
+
+        if (myres.status === 200) {
+          setToken(myres.data);
+        } else if (myres.status === 401) {
+          liff.logout();
+          liff.login({ redirectUri: window.location.href });
+          return;
+        } else {
+          setAuthDone(true);
+        }
+
+        setLineUser(profile);
+
       } catch (error) {
-        console.error('Error during LIFF authentication:', error);
+        console.error('LIFF error:', error);
         setLiffError(true);
         setAuthDone(true);
       }
-    });
+    };
+
+    initAuth();
   }, []);
 
-  const liff_function = async () => {
-    await liff
-      .init({
-        liffId:
-          import.meta.env.MODE === 'production'
-            ? import.meta.env.VITE_LIFF_PROD_ID
-            : import.meta.env.VITE_LIFF_DEV_ID,
-      })
-      .catch((err) => {
-        console.error('LIFF Initialization failed', err);
+  // ── auth หลังได้ token ─────────────────────────────────────────
+  useEffect(() => {
+    if (!token) return;
+
+    const auth = async () => {
+      try {
+        Axios.defaults.headers.Authorization = `Bearer ${token}`;
+        const { data: user } = await Axios.post('/liff/auth', {
+          validateStatus: false,
+        });
+        if (!user) {
+          if (!IS_LOCAL) liff.logout();
+          return;
+        }
+        setIsAuth(true);
+        setAuthDone(true);
+        setTheUser(user);
+      } catch (error) {
+        console.error('Auth error:', error);
         setLiffError(true);
         setAuthDone(true);
-      });
-  };
+      }
+    };
 
-  const auth = async () => {
-    if (!token) {
-      return;
-    }
-    Axios.defaults.headers.Authorization = `Bearer ${token}`;
-    const { data: user } = await Axios.post('/liff/auth', {
-      validateStatus: false,
-    });
-    if (!user) {
-      liff.logout();
-      return;
-    }
-    setIsAuth(true);
-    setAuthDone(true);
-    setTheUser(user);
-  };
+    auth();
+  }, [token]);
 
   const getLanguage = () => {
-    const key = `${import.meta.env.VITE_basename}-language`;
+    const key  = `${import.meta.env.VITE_basename}-language`;
     const lang = localStorage.getItem(key);
     if (!lang) localStorage.setItem(key, language);
     setLanguage(lang || language);
@@ -120,38 +130,19 @@ const ContextProvider = ({ children }) => {
     setLanguage(newLanguage);
   };
 
-  const [character, setCharacter] = useState(() => {
-    try {
-      const saved = localStorage.getItem('character');
-      return saved ? JSON.parse(saved) : null;
-    } catch { return null; }
-  });
-
-  useEffect(() => {
-    if (character) {
-      localStorage.setItem('character', JSON.stringify(character));
-    }
-  }, [character]);
-
   const contextValue = {
-    token,
-    setToken,
-    theUser,
-    setTheUser,
-    isAuth,
-    setIsAuth,
-    isAuthDone,
-    setAuthDone,
-    language,
-    setLanguage,
-    liff,
-    lineUser,
+    token, setToken,
+    theUser, setTheUser,
+    isAuth, setIsAuth,
+    isAuthDone, setAuthDone,
+    language, setLanguage,
+    liff, lineUser,
     switchLanguage,
     isLiffError,
-    character,
-    setCharacter,
+    character, setCharacter,
   };
 
   return <Context.Provider value={contextValue}>{children}</Context.Provider>;
 };
+
 export default ContextProvider;

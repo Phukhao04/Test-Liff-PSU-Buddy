@@ -14,7 +14,6 @@ export default defineConfig({
 
  server: {
   host: true,
-  port: 3000,
-  allowedHosts: ['tutor-constant-ahoy.ngrok-free.dev'],
+  port: 3000
 }
 });
