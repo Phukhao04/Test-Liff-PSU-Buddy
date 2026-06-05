@@ -10,7 +10,7 @@ function App() {
   return (
     <>
       <ContextProvider>
-        <BrowserRouter basename={isProduction ? VITE_basename : '/'}>
+        <BrowserRouter>
           <Layout />
         </BrowserRouter>
       </ContextProvider>
