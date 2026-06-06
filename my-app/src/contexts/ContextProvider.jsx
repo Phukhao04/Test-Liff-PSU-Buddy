@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Axios from '../config/Axios';
 import Context from './Context';
@@ -17,6 +17,7 @@ const ContextProvider = ({ children }) => {
   const [language,    setLanguage] = useState('th');
 
   const navigate = useNavigate();
+  const liffInitialized = useRef(false);
 
   const [character, setCharacter] = useState(() => {
     try {
@@ -33,6 +34,9 @@ const ContextProvider = ({ children }) => {
 
   // ── LIFF / Mock init ───────────────────────────────────────────
   useEffect(() => {
+    if (liffInitialized.current) return;
+    liffInitialized.current = true;
+
     const initAuth = async () => {
       try {
         if (IS_LOCAL) {
@@ -75,7 +79,6 @@ const ContextProvider = ({ children }) => {
         if (myres.status === 200) {
           setToken(myres.data);
         } else if (myres.status === 403) {
-          // ยังไม่ได้ผูกบัญชี → ไปหน้า register
           navigate('/register');
           setAuthDone(true);
           return;

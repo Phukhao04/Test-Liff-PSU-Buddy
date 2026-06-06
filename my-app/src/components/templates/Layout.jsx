@@ -7,29 +7,23 @@ import Context from '@/contexts/Context';
 import Loading from './Loading';
 import Footer from './Footer';
 
-const RegisterScreen = lazy(() => import('../pages/RegisterScreen'));
-const IntroScreen = lazy(() => import('../pages/IntroScreen'));
-const SplashScreen = lazy(() => import('../pages/SplashScreen'));
-const Home = lazy(() => import('../pages/Home'));
-const Menu = lazy(() => import('../pages/Menu'));
-const StudentActivity = lazy(() => import('../pages/studentActivity/StudentActivity'));
-const Emergency = lazy(() => import('../pages/Emergency'));
-const LearningLinks = lazy(() => import('../pages/LearningLinks'));
-const ChangeCharacter = lazy(() => import('../pages/ChangeCharacter'));
-
+const RegisterScreen   = lazy(() => import('../pages/RegisterScreen'));
+const IntroScreen      = lazy(() => import('../pages/IntroScreen'));
+const SplashScreen     = lazy(() => import('../pages/SplashScreen'));
+const Home             = lazy(() => import('../pages/Home'));
+const Menu             = lazy(() => import('../pages/Menu'));
+const StudentActivity  = lazy(() => import('../pages/studentActivity/StudentActivity'));
+const Emergency        = lazy(() => import('../pages/Emergency'));
+const LearningLinks    = lazy(() => import('../pages/LearningLinks'));
+const ChangeCharacter  = lazy(() => import('../pages/ChangeCharacter'));
 
 // ─── Mobile Shell ────────────────────────────────────────────────
-// จำลอง viewport ของ mobile / LIFF
-// - บน device จริง: เต็มหน้าจอ (100dvh x 100vw)
-// - บน desktop dev: กรอบโทรศัพท์ขนาด 390x844 (iPhone 14 standard)
 const MobileShell = ({ children }) => (
   <div className="flex min-h-screen w-full items-center justify-center bg-gray-200">
     <div
       className="
         relative flex flex-col overflow-hidden bg-white
-        /* mobile จริง: เต็มจอ */
         w-screen h-[100dvh]
-        /* desktop: จำกัดขนาด + เงา */
         sm:w-[390px] sm:h-[844px] sm:rounded-[44px]
         sm:shadow-[0_32px_80px_rgba(0,0,0,0.35)]
       "
@@ -58,13 +52,13 @@ const Layout = () => {
   const { isAuthDone, isLiffError } = useContext(Context);
   const location = useLocation();
 
-if (!isAuthDone && location.pathname !== '/') {
-  return (
-    <Suspense fallback={<Loading />}>
-      <Loading />
-    </Suspense>
-  );
-}
+  if (!isAuthDone) {
+    return (
+      <MobileShell>
+        <Loading />
+      </MobileShell>
+    );
+  }
 
   if (isLiffError) {
     return (
@@ -81,18 +75,17 @@ if (!isAuthDone && location.pathname !== '/') {
 
   return (
     <MobileShell>
-      {/* scroll area — เว้นล่างให้ footer floating */}
       <div className={`relative h-full w-full overflow-y-auto overflow-x-hidden ${location.pathname === '/change-character' ? '' : 'pb-24'}`}>
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
-            <Route path="/register" element={<Lazy><RegisterScreen /></Lazy>} />
-            <Route path="/" element={<Lazy><IntroScreen /></Lazy>} />
-            <Route path="/splash" element={<Lazy><SplashScreen /></Lazy>} />  {/* เพิ่ม */}
-            <Route path="/home" element={<Lazy><Home /></Lazy>} />
-            <Route path="/menu" element={<Lazy><Menu /></Lazy>} />
-            <Route path="/student" element={<Lazy><StudentActivity /></Lazy>} />
-            <Route path="/emergency" element={<Lazy><Emergency /></Lazy>} />
-            <Route path="/learning-links" element={<Lazy><LearningLinks /></Lazy>} />
+            <Route path="/register"         element={<Lazy><RegisterScreen /></Lazy>} />
+            <Route path="/"                 element={<Lazy><IntroScreen /></Lazy>} />
+            <Route path="/splash"           element={<Lazy><SplashScreen /></Lazy>} />
+            <Route path="/home"             element={<Lazy><Home /></Lazy>} />
+            <Route path="/menu"             element={<Lazy><Menu /></Lazy>} />
+            <Route path="/student"          element={<Lazy><StudentActivity /></Lazy>} />
+            <Route path="/emergency"        element={<Lazy><Emergency /></Lazy>} />
+            <Route path="/learning-links"   element={<Lazy><LearningLinks /></Lazy>} />
             <Route path="/change-character" element={<Lazy><ChangeCharacter /></Lazy>} />
           </Routes>
         </AnimatePresence>
