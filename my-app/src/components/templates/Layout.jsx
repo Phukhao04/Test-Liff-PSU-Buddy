@@ -7,6 +7,7 @@ import Context from '@/contexts/Context';
 import Loading from './Loading';
 import Footer from './Footer';
 
+const RegisterScreen = lazy(() => import('../pages/RegisterScreen'));
 const IntroScreen = lazy(() => import('../pages/IntroScreen'));
 const SplashScreen = lazy(() => import('../pages/SplashScreen'));
 const Home = lazy(() => import('../pages/Home'));
@@ -84,6 +85,7 @@ if (!isAuthDone && location.pathname !== '/') {
       <div className={`relative h-full w-full overflow-y-auto overflow-x-hidden ${location.pathname === '/change-character' ? '' : 'pb-24'}`}>
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
+            <Route path="/register" element={<Lazy><RegisterScreen /></Lazy>} />
             <Route path="/" element={<Lazy><IntroScreen /></Lazy>} />
             <Route path="/splash" element={<Lazy><SplashScreen /></Lazy>} />  {/* เพิ่ม */}
             <Route path="/home" element={<Lazy><Home /></Lazy>} />

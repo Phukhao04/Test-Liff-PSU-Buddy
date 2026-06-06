@@ -8,13 +8,11 @@ import './App.css';
 
 function App() {
   return (
-    <>
+    <BrowserRouter basename={isProduction ? VITE_basename : '/'}>
       <ContextProvider>
-        <BrowserRouter>
-          <Layout />
-        </BrowserRouter>
+        <Layout />
       </ContextProvider>
-    </>
+    </BrowserRouter>
   );
 }
 

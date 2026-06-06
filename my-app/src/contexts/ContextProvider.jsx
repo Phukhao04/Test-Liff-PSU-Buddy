@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Axios from '../config/Axios';
 import Context from './Context';
 import liff from '@line/liff';
@@ -9,10 +10,13 @@ const ContextProvider = ({ children }) => {
   const [token,       setToken]    = useState(null);
   const [theUser,     setTheUser]  = useState(null);
   const [lineUser,    setLineUser] = useState(null);
+  const [idToken,     setIdToken]  = useState(null);
   const [isAuth,      setIsAuth]   = useState(false);
   const [isAuthDone,  setAuthDone] = useState(false);
   const [isLiffError, setLiffError]= useState(false);
   const [language,    setLanguage] = useState('th');
+
+  const navigate = useNavigate();
 
   const [character, setCharacter] = useState(() => {
     try {
@@ -31,7 +35,6 @@ const ContextProvider = ({ children }) => {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        // ── DEV localhost: ข้าม LIFF init ────────────────────────
         if (IS_LOCAL) {
           console.log('DEV MODE: skip LIFF init');
           const myres = await Axios.post(
@@ -47,7 +50,6 @@ const ContextProvider = ({ children }) => {
           return;
         }
 
-        // ── LIFF จริง ────────────────────────────────────────────
         await liff.init({
           liffId: import.meta.env.MODE === 'production'
             ? import.meta.env.VITE_LIFF_PROD_ID
@@ -61,6 +63,8 @@ const ContextProvider = ({ children }) => {
 
         const profile    = await liff.getProfile();
         const getIdToken = liff.getIDToken();
+        setLineUser(profile);
+        setIdToken(getIdToken);
 
         const myres = await Axios.post(
           'liff/verify',
@@ -70,6 +74,11 @@ const ContextProvider = ({ children }) => {
 
         if (myres.status === 200) {
           setToken(myres.data);
+        } else if (myres.status === 403) {
+          // ยังไม่ได้ผูกบัญชี → ไปหน้า register
+          navigate('/register');
+          setAuthDone(true);
+          return;
         } else if (myres.status === 401) {
           liff.logout();
           liff.login({ redirectUri: window.location.href });
@@ -77,8 +86,6 @@ const ContextProvider = ({ children }) => {
         } else {
           setAuthDone(true);
         }
-
-        setLineUser(profile);
 
       } catch (error) {
         console.error('LIFF error:', error);
@@ -137,6 +144,7 @@ const ContextProvider = ({ children }) => {
     isAuthDone, setAuthDone,
     language, setLanguage,
     liff, lineUser,
+    idToken,
     switchLanguage,
     isLiffError,
     character, setCharacter,
